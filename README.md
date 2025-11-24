@@ -13,7 +13,7 @@ Semua aktor, yaitu Siswa, Admin, Staff/Guru, dan Kepala Sekolah, harus melalui p
 Fungsi cetak laporan absensi merupakan kelanjutan penting (<<Include>>) dari melihat status kehadiran secara real-time. Dengan kata lain, untuk mencetak laporan, pengguna (Admin dan Staff/Guru) harus mengakses dan melihat data status kehadiran terlebih dahulu.
 Fungsi kelola data siswa dan kelas merupakan tanggung jawab utama Admin dan Staff/Guru, yang melibatkan penambahan, perubahan, atau penghapusan data dasar akademik. Terakhir, fungsi kelola pengaturan sistem adalah tugas eksklusif yang dikerjakan oleh Admin dan Kepala Sekolah, yang mencakup konfigurasi dan administrasi backend sistem secara keseluruhan.
  ### b. class Diagram
- <img src="class diagram rpl.jpg" alt="class diagram" width="600"/>
+ <img src="class diagram.png" alt="class diagram" width="600"/>
 
  ## Implementasi
  ### 1. pola design creational
