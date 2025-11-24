@@ -322,7 +322,7 @@ b. activity diagram siswa
 
  ## Evaluasi&kreasi
  1. Design state machine diagram
-<img src="design state machine diagram.jpeg" alt="design state machine diagram" width="600"/>
+<img src="design state machine diagram.png" alt="design state machine diagram" width="600"/>
 
 2. evaluasi kualitas desain
 Activity Diagram Proses Absensi Siswa Berbasis Web menggambarkan alur kerja yang logis dan terstruktur. Desain ini menunjukkan kualitas yang baik dalam aspek Maintainability (kemudahan pemeliharaan) dan Reusability (kemampuan pakai ulang) untuk proses absensi digital.
