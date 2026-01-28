@@ -54,7 +54,6 @@ b. 	Singleton
 	Singleton adalah Creational Design Pattern yang memastikan bahwa sebuah class hanya memiliki satu instance (objek) tunggal selama keseluruhan masa hidup aplikasi, dan menyediakan satu titik akses global ke instance tersebut. Berikut contoh penerapan pada code php :
 ```php
 <?php
-<?php
 class Database {
     private static $instance = null;
     private $conn;
