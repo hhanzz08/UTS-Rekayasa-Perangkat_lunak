@@ -23,121 +23,79 @@ a. Factory Method
    factory method adalah salah satu Creational Design Pattern dalam pemrograman berorientasi objek (OOP) yang bertujuan untuk membuat objek tanpa harus menentukan secara eksplisit kelas objek mana yang akan dibuat.
 Berikut contoh code penerapan menggunakan php :
 ```php
-<!-- absensiHandler.php -->
+<!-- absensiHandlerFactory.php -->
 <?php
+class AbsensiFactory {
+    private $db;
 
-interface AbsensiHandler {
-    // Setiap handler harus dapat memproses permintaan utamanya
-    public function handleRequest(array $data): string; 
-    
-    // Metode opsional, untuk menunjukkan kemampuan tambahan
-    public function getActions(): array;
-}
-
-// absensiMandiriHandler.php
-class AbsenMandiriHandler implements AbsensiHandler {
-    public function handleRequest(array $data): string {
-        // Logika: Memeriksa NIS, merekam waktu, mencatat lokasi.
-        return "Siswa NIS **{$data['nis']}** berhasil merekam absensi mandiri pada " . date('H:i:s');
+    // Menerima koneksi dari Singleton
+    public function __construct($db) {
+        $this->db = $db;
     }
 
-    public function getActions(): array {
-        return ['Absensi Mandiri'];
-    }
-}
+    // Method Factory untuk memproses update status
+    public function createUpdate($id_siswa, $status) {
+        $tanggal = date('Y-m-d');
+        
+        // Membersihkan input (Security)
+        $id_siswa = mysqli_real_escape_string($this->db, $id_siswa);
+        $status = mysqli_real_escape_string($this->db, $status);
 
-// 'AbsensiHandler.php';
-class GuruHandler implements AbsensiHandler {
-    public function handleRequest(array $data): string {
-        // Logika: Guru sedang mengakses data absensi kelasnya.
-        if (isset($data['edit_nis'])) {
-             return "Guru **{$data['nama']}** berhasil **mengedit** status absensi NIS {$data['edit_nis']}.";
-        }
-        return "Guru **{$data['nama']}** berhasil **melihat** daftar absensi kelas X RPL 1.";
-    }
-
-    public function getActions(): array {
-        return ['Lihat Absen', 'Edit Absen'];
+        // Menjalankan perintah SQL
+        $sql = "UPDATE absensi SET status = '$status' 
+                WHERE id_siswa = '$id_siswa' AND tanggal = '$tanggal'";
+        
+        return mysqli_query($this->db, $sql);
     }
 }
-
-// 'AbsensiHandler.php';
-class AdminHandler implements AbsensiHandler {
-    public function handleRequest(array $data): string {
-        // Logika: Admin melakukan tugas tingkat tinggi.
-        if (isset($data['action']) && $data['action'] === 'export_pdf') {
-            return "Admin **{$data['nama']}** sedang **mengekspor** laporan absensi sebagai PDF.";
-        }
-        if (isset($data['action']) && $data['action'] === 'export_excel') {
-            return "Admin **{$data['nama']}** sedang **mengekspor** laporan absensi sebagai Excel.";
-        }
-        if (isset($data['edit_nis'])) {
-             return "Admin **{$data['nama']}** berhasil **mengedit** data absensi NIS {$data['edit_nis']} secara global.";
-        }
-        return "Admin **{$data['nama']}** berhasil masuk ke dashboard manajemen absensi.";
-    }
-
-    public function getActions(): array {
-        return ['Edit Global', 'Ekspor PDF', 'Ekspor Excel'];
-    }
-}
+?>
 ```
 b. 	Singleton
 	Singleton adalah Creational Design Pattern yang memastikan bahwa sebuah class hanya memiliki satu instance (objek) tunggal selama keseluruhan masa hidup aplikasi, dan menyediakan satu titik akses global ke instance tersebut. Berikut contoh penerapan pada code php :
 ```php
 <?php
-class DatabaseConnection {
-    // 1. Variabel statis untuk menyimpan instance tunggal dari kelas
-    private static ?DatabaseConnection $instance = null;
+<?php
+class Database {
+    private static $instance = null;
+    private $conn;
 
-    // Variabel untuk menyimpan koneksi PDO yang sebenarnya
-    private ?PDO $pdo = null; 
-
-    // Konfigurasi Database (Ganti dengan data Anda)
-    private const DB_HOST = 'localhost';
-    private const DB_NAME = 'db_absensi';
-    private const DB_USER = 'root';
-    private const DB_PASS = 'password';
-
-    // 2. Konstruktor dibuat private
-    // Ini MENCEGAH PENGGUNAAN 'new DatabaseConnection()' dari luar kelas
+    // 1. Constructor private: Mencegah pembuatan objek dengan 'new Database()'
     private function __construct() {
-        try {
-            $dsn = "mysql:host=" . self::DB_HOST . ";dbname=" . self::DB_NAME . ";charset=utf8mb4";
-            $this->pdo = new PDO($dsn, self::DB_USER, self::DB_PASS);
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (\PDOException $e) {
-            // Dalam aplikasi nyata, log error ini dan berikan pesan ramah ke pengguna
-            die("Gagal terhubung ke database: " . $e->getMessage());
+        $this->conn = mysqli_connect("localhost", "root", "", "absensi");
+        
+        if (!$this->conn) {
+            die("Koneksi Gagal: " . mysqli_connect_error());
         }
     }
 
-    // 3. Mencegah kloning (Cloning)
-    // MENCEGAH: $conn2 = clone $conn1;
-    private function __clone() { }
+    // 2. Mencegah duplikasi objek melalui cloning
+    private function __clone() {}
 
-    // 4. Mencegah deserialisasi (untuk kasus serialisasi)
-    // MENCEGAH: unserialize($serialized_object);
+    // 3. Mencegah duplikasi objek melalui unserialize
     public function __wakeup() {
-        throw new \Exception("Cannot unserialize a singleton.");
+        throw new Exception("Tidak dapat melakukan unserialize pada Singleton.");
     }
 
-    /**
-     * 5. Metode statis publik untuk mendapatkan instance tunggal
-     * Ini adalah SATU-SATUNYA TITIK AKSES untuk kelas ini
-     */
-    public static function getInstance(): DatabaseConnection {
-        if (self::$instance === null) {
-            self::$instance = new self();
+    // 4. Method statis untuk akses global
+    public static function getInstance() {
+        if (self::$instance == null) {
+            self::$instance = new Database();
         }
         return self::$instance;
     }
 
-    // Metode untuk mengembalikan objek koneksi PDO
-    public function getConnection(): PDO {
-        return $this->pdo;
+    public function getConnection() {
+        return $this->conn;
     }
 }
+
+// JEMBATAN: Variabel $conn tetap bisa dipakai langsung di file lama
+$conn = Database::getInstance()->getConnection();
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
 ```
 c.	Builder 
 	Builder Pattern adalah salah satu Creational Design Pattern yang berfokus pada pemisahan proses konstruksi objek yang kompleks dari representasi akhirnya. Tujuannya adalah untuk membuat berbagai variasi objek yang kompleks dengan menggunakan proses konstruksi yang sama. Pola ini menjadi solusi ideal ketika Anda perlu membuat objek dengan banyak konfigurasi atau banyak parameter opsional, menghindari masalah "telescoping constructor" (konstruktor dengan terlalu banyak parameter) yang sering terjadi di OOP. Berikut contoh penerapan code pada php :
